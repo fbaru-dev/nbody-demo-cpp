@@ -10,7 +10,7 @@ STD = /Qstd=c++11
 #########
 
 CMPFLAGS = /Qopenmp /EHsc
-OPTFLAGS = /O2 /Qansi-alias-
+OPTFLAGS = /O2 /Qansi-alias
 REPFLAGS = /debug /Qopt-report=5 /Qopt-report-filter="GSimulation.cpp,249-325"
 
 FLAGS = $(STD) $(CMPFLAGS) $(OPTFLAGS) $(REPFLAGS)

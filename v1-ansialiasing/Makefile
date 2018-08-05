@@ -10,7 +10,7 @@ STD = -std=c++11
 #########
 
 CMPFLAGS = -fopenmp
-OPTFLAGS = -O2 -no-ansi-alias
+OPTFLAGS = -O2 -ansi-alias
 REPFLAGS = -g -qopt-report=5 -qopt-report-filter="GSimulation.cpp,249-325"
 
 FLAGS = $(STD) $(CMPFLAGS) $(OPTFLAGS) $(REPFLAGS)

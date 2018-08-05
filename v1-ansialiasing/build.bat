@@ -16,7 +16,7 @@ set STD=/Qstd=c++11
 @echo off
 
 set CMPFLAGS=/Qopenmp /EHsc
-set OPTFLAGS=/O2 /Qansi-alias-
+set OPTFLAGS=/O2 /Qansi-alias
 set REPFLAGS=/debug /Qopt-report=5 /Qopt-report-filter="GSimulation.cpp,249-325"
 
 set FLAGS=%STD% %CMPFLAGS% %OPTFLAGS% %REPFLAGS%
