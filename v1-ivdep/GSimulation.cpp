@@ -265,6 +265,7 @@ void GSimulation::start() {
             //computes the distance to other particles
             //and updates acceleration
             //using Newton's law of gravitation
+            #pragma ivdep
             for (j = 0; j < nparts; ++j) {
 
                 //Computes the distance
@@ -289,6 +290,7 @@ void GSimulation::start() {
         step_kenergy = 0;
 
         //Iterates over all particles
+        #pragma ivdep
         for (i = 0; i < nparts; ++i) {
 
             //Updates velocity for given particle
