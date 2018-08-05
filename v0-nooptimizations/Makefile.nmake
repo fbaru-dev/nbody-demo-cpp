@@ -1,0 +1,80 @@
+#########################
+# Compiler and standard #
+#########################
+
+CMP = icl
+STD = /Qstd=c++11
+
+#########
+# Flags #
+#########
+
+CMPFLAGS = /Qopenmp /EHsc
+OPTFLAGS = /O2 /Qansi-alias-
+REPFLAGS = /debug /Qopt-report=5 /Qopt-report-filter="GSimulation.cpp,249-325"
+
+FLAGS = $(STD) $(CMPFLAGS) $(OPTFLAGS) $(REPFLAGS)
+
+#########
+# Files #
+#########
+
+SRC = GSimulation.cpp main.cpp
+OBJ = $(SRC:.cpp=.obj)
+
+EXE = nbody.exe
+ADV = adv-v0-nooptimizations
+
+#################
+# GENERAL RULES #
+#################
+
+all: clean $(EXE)
+
+run: $(EXE)
+	@echo.
+	@echo ### Running the CPU executable:
+	@$(EXE)
+
+$(EXE): $(OBJ)
+	@echo.
+	@echo ### Linking the CPU executable:
+	$(CMP) $(FLAGS) $(OBJ) /link /out:$(EXE)
+
+$(OBJ): $(SRC)
+	@echo.
+	@echo ### Compiling the source files for CPU:
+	$(CMP) $(FLAGS) /c $(?)
+
+asm: GSimulation.cpp
+	@echo.
+	@echo ### Generating assembly code:
+	$(CMP) $(FLAGS) /S GSimulation.cpp
+
+clean:
+	@echo.
+	@echo ### Removing temporary files:
+	del $(EXE) $(OBJ) *.asm *.optrpt *.pdb *.ilk
+
+#################
+# ADVISOR RULES #
+#################
+
+survey:
+	advixe-cl -collect survey -project-dir $(ADV) -- $(EXE)
+
+roofline:
+	advixe-cl -collect survey -project-dir $(ADV) -- $(EXE)
+	advixe-cl -collect tripcounts -flop -project-dir $(ADV) -- $(EXE)
+
+map:
+	advixe-cl -collect map -mark-up-list=1 -project-dir $(ADV) -- $(EXE)
+
+dependencies:
+	advixe-cl -collect dependencies -mark-up-list=1 -project-dir $(ADV) -- $(EXE) 1000 1
+
+open-gui:
+	start /B advixe-gui $(ADV)\$(ADV).advixeproj >nul 2>nul
+
+clean-results:
+	if exist $(ADV) rd /S /Q $(ADV)
