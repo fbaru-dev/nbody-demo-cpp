@@ -1,0 +1,37 @@
+#######
+# IDE #
+#######
+
+.settings
+.cproject
+.project
+
+###########
+# Advisor #
+###########
+
+adv-v*
+
+#########
+# Linux #
+#########
+
+nbody.x
+*.o
+*.s
+
+###########
+# Windows #
+###########
+
+nbody.exe
+*.obj
+*.asm
+*.pdb
+*.ilk
+
+###########
+# General #
+###########
+
+*.optrpt
