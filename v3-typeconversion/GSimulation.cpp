@@ -188,8 +188,8 @@ void GSimulation::start() {
     //------------------------------------------//
 
     //Simulation independent constants
-    const double G = 6.67259e-11;            //gravitational constant
-    const double softeningSquared = 1e-3;    //prevents explosion if the particles
+    const real_t G = 6.67259e-11;            //gravitational constant
+    const real_t softeningSquared = 1e-3;    //prevents explosion if the particles
                                              //are close to each other
 
     //Simulation dependent constants
@@ -257,9 +257,9 @@ void GSimulation::start() {
         for (i = 0; i < nparts; ++i) {
 
             //Resets acceleration
-            _particles[i].acc[0] = 0.;
-            _particles[i].acc[1] = 0.;
-            _particles[i].acc[2] = 0.;
+            _particles[i].acc[0] = 0.f;
+            _particles[i].acc[1] = 0.f;
+            _particles[i].acc[2] = 0.f;
 
             //For given particle
             //computes the distance to other particles
@@ -273,7 +273,7 @@ void GSimulation::start() {
                 dz = _particles[j].pos[2] - _particles[i].pos[2];                   //1flop
 
                 distanceSqr = dx * dx + dy * dy + dz * dz + softeningSquared;       //6flops
-                distanceInv = 1.0 / sqrt(distanceSqr);                              //1div+1sqrt
+                distanceInv = 1.0f / sqrtf(distanceSqr);                            //1div+1sqrt
 
                 //Updates acceleration
                 _particles[i].acc[0] += G * _particles[j].mass * dx *
