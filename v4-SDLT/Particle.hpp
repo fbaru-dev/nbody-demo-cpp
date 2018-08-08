@@ -29,25 +29,28 @@
 #include "types.hpp"
 
 #include <cmath>
+#include <sdlt/sdlt.h>
 
 struct Particle {
 
 public:
-    real_t pos[3];    //position
-    real_t vel[3];    //velocity
-    real_t acc[3];    //acceleration
-    real_t mass;      //mass
+    real_t pos_x, pos_y, pos_z;    //position
+    real_t vel_x, vel_y, vel_z;    //velocity
+    real_t acc_x, acc_y, acc_z;    //acceleration
+    real_t mass;                   //mass
 
     Particle() {
         init_zero();
     }
 
     void init_zero() {
-        pos[0] = 0.; pos[1] = 0.; pos[2] = 0.;
-        vel[0] = 0.; vel[1] = 0.; vel[2] = 0.;
-        acc[0] = 0.; acc[1] = 0.; acc[2] = 0.;
-        mass   = 0.;
+        pos_x = 0.; pos_y = 0.; pos_z = 0.;
+        vel_x = 0.; vel_y = 0.; vel_z = 0.;
+        acc_x = 0.; acc_y = 0.; acc_z = 0.;
+        mass  = 0.;
     }
 };
+
+SDLT_PRIMITIVE(Particle, pos_x, pos_y, pos_z, vel_x, vel_y, vel_z, acc_x, acc_y, acc_z, mass)
 
 #endif

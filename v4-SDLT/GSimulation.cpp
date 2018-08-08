@@ -38,17 +38,9 @@ GSimulation::GSimulation() {
     _set_nparts(16000);
     _set_nsteps(10);
     _set_tstep(0.1);
-
-     //Set the pointers to null
-     //NB:
-     //we will allocate/deallocate memory just before/after the simulation
-     //always keeping the pointers null when the memory is not allocated
-     //(initialize them with null after every deallocation and initially in constructor)
-    _init_zero();
 }
 
 GSimulation::~GSimulation() {
-    _dealloc();                                 //deallocate memory and set ptrs to null
 }
 
 //---------------------------------//
@@ -56,13 +48,11 @@ GSimulation::~GSimulation() {
 //---------------------------------//
 
 void GSimulation::_alloc() {
-    _dealloc();                                 //deallocate memory and set ptrs to null
-    _particles = new Particle[get_nparts()];    //allocate memory
+    _particles.resize(get_nparts());
 }
 
 void GSimulation::_dealloc() {
-    delete[] _particles;                        //deallocate memory
-    _init_zero();                               //set pointers to null
+    //RAII, So no need to deallocate manually
 }
 
 //-------------------------------------------//
@@ -72,7 +62,6 @@ void GSimulation::_dealloc() {
 //-------------------------------------------//
 
 void GSimulation::_init_zero() {
-    _particles = nullptr;                       //set pointers to null
 }
 
 //----------------------------------------------------------------//
@@ -85,10 +74,11 @@ void GSimulation::_init_particles_pos(unsigned seed) {
     std::mt19937 gen(seed);
     std::uniform_real_distribution<real_t> unif_d(0, 1.0);
 
+    auto particles = _particles.access();
     for (int i = 0; i < nparts; ++i) {
-        _particles[i].pos[0] = unif_d(gen);
-        _particles[i].pos[1] = unif_d(gen);
-        _particles[i].pos[2] = unif_d(gen);
+        particles[i].pos_x() = unif_d(gen);
+        particles[i].pos_y() = unif_d(gen);
+        particles[i].pos_z() = unif_d(gen);
     }
 }
 
@@ -98,20 +88,22 @@ void GSimulation::_init_particles_vel(unsigned seed) {
     std::mt19937 gen(seed);
     std::uniform_real_distribution<real_t> unif_d(-1.0, 1.0);
 
+    auto particles = _particles.access();
     for (int i = 0; i < nparts; ++i) {
-        _particles[i].vel[0] = unif_d(gen) * 1.0e-3f;
-        _particles[i].vel[1] = unif_d(gen) * 1.0e-3f;
-        _particles[i].vel[2] = unif_d(gen) * 1.0e-3f;
+        particles[i].vel_x() = unif_d(gen) * 1.0e-3f;
+        particles[i].vel_y() = unif_d(gen) * 1.0e-3f;
+        particles[i].vel_z() = unif_d(gen) * 1.0e-3f;
     }
 }
 
 void GSimulation::_init_particles_acc() {
     int nparts = get_nparts();
 
+    auto particles = _particles.access();
     for (int i = 0; i < nparts; ++i) {
-        _particles[i].acc[0] = 0.f;
-        _particles[i].acc[1] = 0.f;
-        _particles[i].acc[2] = 0.f;
+        particles[i].acc_x() = 0.f;
+        particles[i].acc_y() = 0.f;
+        particles[i].acc_z() = 0.f;
     }
 }
 
@@ -123,8 +115,9 @@ void GSimulation::_init_particles_mass(unsigned seed) {
 
     real_t n = static_cast<real_t>(nparts);
 
+    auto particles = _particles.access();
     for (int i = 0; i < nparts; ++i) {
-        _particles[i].mass = unif_d(gen) * n;
+        particles[i].mass() = unif_d(gen) * n;
     }
 }
 
@@ -239,6 +232,7 @@ void GSimulation::start() {
     _init_particles_acc();                   //initializes acceleration
     _init_particles_mass(seed);              //initializes mass
 
+    auto particles = _particles.access();
 
     //------------------//
     // Simulation start //
@@ -257,9 +251,9 @@ void GSimulation::start() {
         for (i = 0; i < nparts; ++i) {
 
             //Resets acceleration
-            _particles[i].acc[0] = 0.f;
-            _particles[i].acc[1] = 0.f;
-            _particles[i].acc[2] = 0.f;
+            particles[i].acc_x() = 0.f;
+            particles[i].acc_y() = 0.f;
+            particles[i].acc_z() = 0.f;
 
             //For given particle
             //computes the distance to other particles
@@ -268,19 +262,19 @@ void GSimulation::start() {
             for (j = 0; j < nparts; ++j) {
 
                 //Computes the distance
-                dx = _particles[j].pos[0] - _particles[i].pos[0];                   //1flop
-                dy = _particles[j].pos[1] - _particles[i].pos[1];                   //1flop
-                dz = _particles[j].pos[2] - _particles[i].pos[2];                   //1flop
+                dx = particles[j].pos_x() - particles[i].pos_x();                   //1flop
+                dy = particles[j].pos_y() - particles[i].pos_y();                   //1flop
+                dz = particles[j].pos_z() - particles[i].pos_z();                   //1flop
 
                 distanceSqr = dx * dx + dy * dy + dz * dz + softeningSquared;       //6flops
                 distanceInv = 1.0f / sqrtf(distanceSqr);                            //1div+1sqrt
 
                 //Updates acceleration
-                _particles[i].acc[0] += G * _particles[j].mass * dx *
+                particles[i].acc_x() += G * particles[j].mass() * dx *
                                         distanceInv * distanceInv * distanceInv;    //6flops
-                _particles[i].acc[1] += G * _particles[j].mass * dy *
+                particles[i].acc_y() += G * particles[j].mass() * dy *
                                         distanceInv * distanceInv * distanceInv;    //6flops
-                _particles[i].acc[2] += G * _particles[j].mass * dz *
+                particles[i].acc_z() += G * particles[j].mass() * dz *
                                         distanceInv * distanceInv * distanceInv;    //6flops
             }
         }
@@ -292,19 +286,19 @@ void GSimulation::start() {
         for (i = 0; i < nparts; ++i) {
 
             //Updates velocity for given particle
-            _particles[i].vel[0] += _particles[i].acc[0] * dt;                      //2flops
-            _particles[i].vel[1] += _particles[i].acc[1] * dt;                      //2flops
-            _particles[i].vel[2] += _particles[i].acc[2] * dt;                      //2flops
+            particles[i].vel_x() += particles[i].acc_x() * dt;                      //2flops
+            particles[i].vel_y() += particles[i].acc_y() * dt;                      //2flops
+            particles[i].vel_z() += particles[i].acc_z() * dt;                      //2flops
 
             //Updates position for given particle
-            _particles[i].pos[0] += _particles[i].vel[0] * dt;                      //2flops
-            _particles[i].pos[1] += _particles[i].vel[1] * dt;                      //2flops
-            _particles[i].pos[2] += _particles[i].vel[2] * dt;                      //2flops
+            particles[i].pos_x() += particles[i].vel_x() * dt;                      //2flops
+            particles[i].pos_y() += particles[i].vel_y() * dt;                      //2flops
+            particles[i].pos_z() += particles[i].vel_z() * dt;                      //2flops
 
             //Adds particle kinetic energy to step kinetic energy                   //7flops
-            step_kenergy += _particles[i].mass * (_particles[i].vel[0] * _particles[i].vel[0] +
-                                                  _particles[i].vel[1] * _particles[i].vel[1] +
-                                                  _particles[i].vel[2] * _particles[i].vel[2] );
+            step_kenergy += particles[i].mass() * (particles[i].vel_x() * particles[i].vel_x() +
+                                                   particles[i].vel_y() * particles[i].vel_y() +
+                                                   particles[i].vel_z() * particles[i].vel_z() );
         }
 
         //Kinetic energy at the current step

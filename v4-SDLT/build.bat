@@ -19,7 +19,7 @@ set CMPFLAGS=/Qopenmp /EHsc
 set OPTFLAGS=/O2 /Qansi-alias /QxAVX
 ::set OPTFLAGS=/O2 /Qansi-alias /QxCORE-AVX2
 ::set OPTFLAGS=/O2 /Qansi-alias /QxCORE-AVX512 /Qopt-zmm-usage:high
-set REPFLAGS=/debug /Qopt-report=5 /Qopt-report-filter="GSimulation.cpp,249-325"
+set REPFLAGS=/debug /Qopt-report=5 /Qopt-report-filter="GSimulation.cpp,243-319"
 
 set FLAGS=%STD% %CMPFLAGS% %OPTFLAGS% %REPFLAGS%
 

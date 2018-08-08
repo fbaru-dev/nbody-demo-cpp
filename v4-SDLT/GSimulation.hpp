@@ -49,7 +49,7 @@ public:
     inline real_t get_nthreads() const { return _nthreads; }
 
 private:
-    Particle* _particles;     //array of particles
+    sdlt::soa1d_container<Particle> _particles;     //array of particles
 
     //Simulation parameters
     int       _nparts;        //number of particles
