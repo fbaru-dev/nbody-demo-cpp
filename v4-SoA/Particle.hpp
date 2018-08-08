@@ -33,20 +33,61 @@
 struct Particle {
 
 public:
-    real_t pos[3];    //position
-    real_t vel[3];    //velocity
-    real_t acc[3];    //acceleration
-    real_t mass;      //mass
+    real_t *pos_x, *pos_y, *pos_z;    //position
+    real_t *vel_x, *vel_y, *vel_z;    //velocity
+    real_t *acc_x, *acc_y, *acc_z;    //acceleration
+    real_t *mass;                     //mass
 
     Particle() {
         init_zero();
     }
 
+    ~Particle() {
+        dealloc();
+    }
+
+    void alloc(int nparts) {
+        dealloc();
+
+        pos_x = new real_t[nparts];
+        pos_y = new real_t[nparts];
+        pos_z = new real_t[nparts];
+
+        vel_x = new real_t[nparts];
+        vel_y = new real_t[nparts];
+        vel_z = new real_t[nparts];
+
+        acc_x = new real_t[nparts];
+        acc_y = new real_t[nparts];
+        acc_z = new real_t[nparts];
+
+        mass  = new real_t[nparts];
+    }
+
+    void dealloc() {
+        delete[] pos_x;
+        delete[] pos_y;
+        delete[] pos_z;
+
+        delete[] vel_x;
+        delete[] vel_y;
+        delete[] vel_z;
+
+        delete[] acc_x;
+        delete[] acc_y;
+        delete[] acc_z;
+
+        delete[] mass;
+
+        init_zero();
+    }
+
+private:
     void init_zero() {
-        pos[0] = 0.; pos[1] = 0.; pos[2] = 0.;
-        vel[0] = 0.; vel[1] = 0.; vel[2] = 0.;
-        acc[0] = 0.; acc[1] = 0.; acc[2] = 0.;
-        mass   = 0.;
+        pos_x = nullptr; pos_y = nullptr; pos_z = nullptr;
+        vel_x = nullptr; vel_y = nullptr; vel_z = nullptr;
+        acc_x = nullptr; acc_y = nullptr; acc_z = nullptr;
+        mass  = nullptr;
     }
 };
 
