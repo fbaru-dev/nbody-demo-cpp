@@ -251,9 +251,9 @@ void GSimulation::start() {
         for (i = 0; i < nparts; ++i) {
 
             //Resets acceleration
-            particles[i].acc_x() = 0.f;
-            particles[i].acc_y() = 0.f;
-            particles[i].acc_z() = 0.f;
+            real_t acc_x = 0.f;
+            real_t acc_y = 0.f;
+            real_t acc_z = 0.f;
 
             //For given particle
             //computes the distance to other particles
@@ -270,19 +270,24 @@ void GSimulation::start() {
                 distanceInv = 1.0f / sqrtf(distanceSqr);                            //1div+1sqrt
 
                 //Updates acceleration
-                particles[i].acc_x() += G * particles[j].mass() * dx *
-                                        distanceInv * distanceInv * distanceInv;    //6flops
-                particles[i].acc_y() += G * particles[j].mass() * dy *
-                                        distanceInv * distanceInv * distanceInv;    //6flops
-                particles[i].acc_z() += G * particles[j].mass() * dz *
-                                        distanceInv * distanceInv * distanceInv;    //6flops
+                acc_x += G * particles[j].mass() * dx *
+                         distanceInv * distanceInv * distanceInv;                   //6flops
+                acc_y += G * particles[j].mass() * dy *
+                         distanceInv * distanceInv * distanceInv;                   //6flops
+                acc_z += G * particles[j].mass() * dz *
+                         distanceInv * distanceInv * distanceInv;                   //6flops
             }
+
+            particles[i].acc_x() = acc_x;
+            particles[i].acc_y() = acc_y;
+            particles[i].acc_z() = acc_z;
         }
 
         //Resets kinetic energy for given iteration step
         step_kenergy = 0;
 
         //Iterates over all particles
+        #pragma ivdep
         for (i = 0; i < nparts; ++i) {
 
             //Updates velocity for given particle
