@@ -10,9 +10,9 @@ STD = /Qstd=c++11
 #########
 
 CMPFLAGS = /Qopenmp /EHsc
-OPTFLAGS = /O2 /Qansi-alias /QxAVX
-#OPTFLAGS = /O2 /Qansi-alias /QxCORE-AVX2
-#OPTFLAGS = /O2 /Qansi-alias /QxCORE-AVX512 /Qopt-zmm-usage:high
+OPTFLAGS = /O2 /Qansi-alias /QxAVX /DASSUME_ALIGNED
+#OPTFLAGS = /O2 /Qansi-alias /QxCORE-AVX2 /DASSUME_ALIGNED
+#OPTFLAGS = /O2 /Qansi-alias /QxCORE-AVX512 /Qopt-zmm-usage:high /DASSUME_ALIGNED
 REPFLAGS = /debug /Qopt-report=5 /Qopt-report-filter="GSimulation.cpp,250-331"
 
 FLAGS = $(STD) $(CMPFLAGS) $(OPTFLAGS) $(REPFLAGS)

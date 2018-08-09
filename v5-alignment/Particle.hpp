@@ -29,6 +29,9 @@
 #include "types.hpp"
 
 #include <cmath>
+#include <malloc.h>
+#include <new>
+#include <iostream>
 
 struct Particle {
 
@@ -49,35 +52,42 @@ public:
     void alloc(int nparts) {
         dealloc();
 
-        pos_x = new real_t[nparts];
-        pos_y = new real_t[nparts];
-        pos_z = new real_t[nparts];
+        pos_x = (real_t*) _mm_malloc(nparts * sizeof(real_t), 64);
+        pos_y = (real_t*) _mm_malloc(nparts * sizeof(real_t), 64);
+        pos_z = (real_t*) _mm_malloc(nparts * sizeof(real_t), 64);
 
-        vel_x = new real_t[nparts];
-        vel_y = new real_t[nparts];
-        vel_z = new real_t[nparts];
+        vel_x = (real_t*) _mm_malloc(nparts * sizeof(real_t), 64);
+        vel_y = (real_t*) _mm_malloc(nparts * sizeof(real_t), 64);
+        vel_z = (real_t*) _mm_malloc(nparts * sizeof(real_t), 64);
 
-        acc_x = new real_t[nparts];
-        acc_y = new real_t[nparts];
-        acc_z = new real_t[nparts];
+        acc_x = (real_t*) _mm_malloc(nparts * sizeof(real_t), 64);
+        acc_y = (real_t*) _mm_malloc(nparts * sizeof(real_t), 64);
+        acc_z = (real_t*) _mm_malloc(nparts * sizeof(real_t), 64);
 
-        mass  = new real_t[nparts];
+        mass  = (real_t*) _mm_malloc(nparts * sizeof(real_t), 64);
+
+        if ( !(pos_x && pos_y && pos_z &&
+               vel_x && vel_y && vel_z &&
+               acc_x && acc_y && acc_z && mass) ) {
+            std::cerr << "Allocation failed (_mm_malloc returned NULL)." << std::endl;
+            throw std::bad_alloc();
+        }
     }
 
     void dealloc() {
-        delete[] pos_x;
-        delete[] pos_y;
-        delete[] pos_z;
+        _mm_free(pos_x);
+        _mm_free(pos_y);
+        _mm_free(pos_z);
 
-        delete[] vel_x;
-        delete[] vel_y;
-        delete[] vel_z;
+        _mm_free(vel_x);
+        _mm_free(vel_y);
+        _mm_free(vel_z);
 
-        delete[] acc_x;
-        delete[] acc_y;
-        delete[] acc_z;
+        _mm_free(acc_x);
+        _mm_free(acc_y);
+        _mm_free(acc_z);
 
-        delete[] mass;
+        _mm_free(mass);
 
         init_zero();
     }

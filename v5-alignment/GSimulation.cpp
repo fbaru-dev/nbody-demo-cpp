@@ -257,6 +257,13 @@ void GSimulation::start() {
         //Iterates over all particles
         for (i = 0; i < nparts; ++i) {
 
+            #ifdef ASSUME_ALIGNED
+            __assume_aligned(_particles->pos_x, 64);
+            __assume_aligned(_particles->pos_y, 64);
+            __assume_aligned(_particles->pos_z, 64);
+            __assume_aligned(_particles->mass, 64);
+            #endif
+
             //Resets acceleration
             real_t acc_x = 0.f;
             real_t acc_y = 0.f;
@@ -292,6 +299,22 @@ void GSimulation::start() {
 
         //Resets kinetic energy for given iteration step
         step_kenergy = 0;
+
+        #ifdef ASSUME_ALIGNED
+        __assume_aligned(_particles->pos_x, 64);
+        __assume_aligned(_particles->pos_y, 64);
+        __assume_aligned(_particles->pos_z, 64);
+
+        __assume_aligned(_particles->vel_x, 64);
+        __assume_aligned(_particles->vel_y, 64);
+        __assume_aligned(_particles->vel_z, 64);
+
+        __assume_aligned(_particles->acc_x, 64);
+        __assume_aligned(_particles->acc_y, 64);
+        __assume_aligned(_particles->acc_z, 64);
+
+        __assume_aligned(_particles->mass, 64);
+        #endif
 
         //Iterates over all particles
         #pragma ivdep
