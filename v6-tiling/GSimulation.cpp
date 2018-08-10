@@ -211,7 +211,8 @@ void GSimulation::start() {
 
 
     //Temporary variables
-    int    step, i, j;                       //vars used for iteration
+    int    step, i, j, itile;                //vars used for iteration
+    const int tile_size = 8;                 //tile size
     real_t dx, dy, dz;                       //xyz distance
     real_t distanceSqr;                      //squared distance
     real_t distanceInv;                      //1/distance
@@ -255,7 +256,7 @@ void GSimulation::start() {
         step_time_start = CPUTime::get_time_in_seconds();
 
         //Iterates over all particles
-        for (i = 0; i < nparts; ++i) {
+        for (itile = 0; itile < nparts; itile += tile_size) {
 
             #ifdef ASSUME_ALIGNED
             __assume_aligned(_particles->pos_x, 64);
@@ -265,36 +266,45 @@ void GSimulation::start() {
             #endif
 
             //Resets acceleration
-            real_t acc_x = 0.f;
-            real_t acc_y = 0.f;
-            real_t acc_z = 0.f;
+            real_t acc_x[tile_size];
+            real_t acc_y[tile_size];
+            real_t acc_z[tile_size];
+            for (i = itile; i < itile+tile_size; ++i) {
+                acc_x[i - itile] = 0.f;
+                acc_y[i - itile] = 0.f;
+                acc_z[i - itile] = 0.f;
+            }
 
             //For given particle
             //computes the distance to other particles
             //and updates acceleration
             //using Newton's law of gravitation
             for (j = 0; j < nparts; ++j) {
+                for (i = itile; i < itile+tile_size; ++i) {
 
-                //Computes the distance
-                dx = _particles->pos_x[j] - _particles->pos_x[i];                   //1flop
-                dy = _particles->pos_y[j] - _particles->pos_y[i];                   //1flop
-                dz = _particles->pos_z[j] - _particles->pos_z[i];                   //1flop
+                    //Computes the distance
+                    dx = _particles->pos_x[j] - _particles->pos_x[i];               //1flop
+                    dy = _particles->pos_y[j] - _particles->pos_y[i];               //1flop
+                    dz = _particles->pos_z[j] - _particles->pos_z[i];               //1flop
 
-                distanceSqr = dx * dx + dy * dy + dz * dz + softeningSquared;       //6flops
-                distanceInv = 1.0f / sqrtf(distanceSqr);                            //1div+1sqrt
+                    distanceSqr = dx * dx + dy * dy + dz * dz + softeningSquared;   //6flops
+                    distanceInv = 1.0f / sqrtf(distanceSqr);                        //1div+1sqrt
 
-                //Updates acceleration
-                acc_x += G * _particles->mass[j] * dx *
-                         distanceInv * distanceInv * distanceInv;                   //6flops
-                acc_y += G * _particles->mass[j] * dy *
-                         distanceInv * distanceInv * distanceInv;                   //6flops
-                acc_z += G * _particles->mass[j] * dz *
-                         distanceInv * distanceInv * distanceInv;                   //6flops
+                    //Updates acceleration
+                    acc_x[i - itile] += G * _particles->mass[j] * dx *
+                                        distanceInv * distanceInv * distanceInv;    //6flops
+                    acc_y[i - itile] += G * _particles->mass[j] * dy *
+                                        distanceInv * distanceInv * distanceInv;    //6flops
+                    acc_z[i - itile] += G * _particles->mass[j] * dz *
+                                        distanceInv * distanceInv * distanceInv;    //6flops
+                }
             }
 
-            _particles->acc_x[i] = acc_x;
-            _particles->acc_y[i] = acc_y;
-            _particles->acc_z[i] = acc_z;
+            for (i = itile; i < itile+tile_size; ++i) {
+                _particles->acc_x[i] = acc_x[i - itile];
+                _particles->acc_y[i] = acc_y[i - itile];
+                _particles->acc_z[i] = acc_z[i - itile];
+            }
         }
 
         //Resets kinetic energy for given iteration step
