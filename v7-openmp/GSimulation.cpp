@@ -256,6 +256,7 @@ void GSimulation::start() {
         step_time_start = CPUTime::get_time_in_seconds();
 
         //Iterates over all particles
+        #pragma omp parallel for
         for (itile = 0; itile < nparts; itile += tile_size) {
 
             #ifdef ASSUME_ALIGNED
@@ -279,6 +280,7 @@ void GSimulation::start() {
             //computes the distance to other particles
             //and updates acceleration
             //using Newton's law of gravitation
+            #pragma omp simd
             for (j = 0; j < nparts; ++j) {
                 for (i = itile; i < itile+tile_size; ++i) {
 
@@ -327,7 +329,7 @@ void GSimulation::start() {
         #endif
 
         //Iterates over all particles
-        #pragma ivdep
+        #pragma omp parallel for simd reduction(+:step_kenergy)
         for (i = 0; i < nparts; ++i) {
 
             //Updates velocity for given particle
@@ -367,7 +369,8 @@ void GSimulation::start() {
     _tot_time    = total_time_duration;
     _tot_flops   = ngflop * nsteps;
 
-    _nthreads = 1;
+    #pragma omp parallel
+    _nthreads = omp_get_num_threads();
 
     _gflops_avg =      gflops_avg / (double) (nsteps);
     _gflops_dev = sqrt(gflops_dev / (double) (nsteps) - _gflops_avg * _gflops_avg);

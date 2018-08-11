@@ -13,7 +13,7 @@ CMPFLAGS = -fopenmp
 OPTFLAGS = -O2 -ansi-alias -xAVX -DASSUME_ALIGNED
 #OPTFLAGS = -O2 -ansi-alias -xCORE-AVX2 -DASSUME_ALIGNED
 #OPTFLAGS = -O2 -ansi-alias -xCORE-AVX512 -qopt-zmm-usage=high -DASSUME_ALIGNED
-REPFLAGS = -g -qopt-report=5 -qopt-report-filter="GSimulation.cpp,250-331"
+REPFLAGS = -g -qopt-report=5 -qopt-report-filter="GSimulation.cpp,251-366"
 
 FLAGS = $(STD) $(CMPFLAGS) $(OPTFLAGS) $(REPFLAGS)
 
